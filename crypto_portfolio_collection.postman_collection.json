@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Crypto Portfolio API",
+    "_postman_id": "crypto-portfolio-collection",
+    "description": "Cole\u00e7\u00e3o de rotas para testar o backend de gest\u00e3o de criptoativos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Registrar Aporte",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"symbol\": \"BTC\",\n  \"quantity\": 0.1,\n  \"totalUsdValue\": 6500,\n  \"unitPriceUsd\": 65000,\n  \"date\": \"2025-06-01\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/investments",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "investments"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Registrar Venda",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"symbol\": \"BTC\",\n  \"quantity\": 0.05,\n  \"unitPriceUsd\": 70000,\n  \"date\": \"2025-06-02\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/sales",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "sales"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Consultar Posi\u00e7\u00e3o Consolidada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/portfolio",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "portfolio"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Hist\u00f3rico por Ativo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/portfolio/history/BTC",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "portfolio",
+            "history",
+            "BTC"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Exportar JSON",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/portfolio/export",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "portfolio",
+            "export"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Exportar CSV",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/portfolio/export/csv",
+          "host": [
+            "localhost:3000"
+          ],
+          "path": [
+            "portfolio",
+            "export",
+            "csv"
+          ]
+        }
+      }
+    }
+  ]
+}

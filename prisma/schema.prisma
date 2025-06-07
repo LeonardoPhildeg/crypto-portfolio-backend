@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Crypto {
+  id           Int       @id @default(autoincrement())
+  symbol       String    @unique
+  name         String
+  investments  Investment[]
+  sales        Sale[]
+}
+
+model Investment {
+  id             Int      @id @default(autoincrement())
+  cryptoId       Int
+  crypto         Crypto   @relation(fields: [cryptoId], references: [id])
+  date           DateTime
+  quantity       Decimal  @db.Decimal(18, 8)
+  totalUsdValue  Decimal  @db.Decimal(18, 8)
+  unitPriceUsd   Decimal  @db.Decimal(18, 8)
+}
+
+model Sale {
+  id             Int      @id @default(autoincrement())
+  cryptoId       Int
+  crypto         Crypto   @relation(fields: [cryptoId], references: [id])
+  date           DateTime
+  quantity       Decimal  @db.Decimal(18, 8)
+  unitPriceUsd   Decimal  @db.Decimal(18, 8)
+}
+
+model Cash {
+  id          Int      @id @default(1) // sempre terá apenas um registro
+  usdBalance  Decimal  @db.Decimal(18, 8)
+}
