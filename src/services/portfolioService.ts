@@ -1,7 +1,6 @@
-import { PrismaClient, Investment, Sale } from '@prisma/client';
-import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { calcularPrecoMedio } from '../utils/precoMedio';
+import axios from 'axios';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +17,38 @@ export interface Ativo {
   valorRentabilidadeTotal: string;
 }
 
-export const calcularPortfolio = async (symbolFilter?: string): Promise<Ativo[]> => {
+export const calculaTotais = async (data: Ativo[]) => {
+  const totais = data.reduce(
+    (acc, item) => {
+      acc.lucroTotal = acc.lucroTotal.plus(new Decimal(item.valorRentabilidadeTotal));
+      acc.investidoTotal = acc.investidoTotal.plus(new Decimal(item.investido));
+      acc.valorAtualUsd = acc.valorAtualUsd.plus(new Decimal(item.currentValueUsd));
+      acc.valorAtualBrl = acc.valorAtualBrl.plus(new Decimal(item.currentValueBrl));
+      return acc;
+    },
+    {
+      lucroTotal: new Decimal(0),
+      investidoTotal: new Decimal(0),
+      valorAtualUsd: new Decimal(0),
+      valorAtualBrl: new Decimal(0),
+    }
+  );
+
+  const allTimeProfit = {
+    valorInvestido: totais.investidoTotal.toFixed(2),
+    percentualLucroTotal: totais.lucroTotal.dividedBy(totais.investidoTotal).times(100).toFixed(2),
+    valorLucroTotal: totais.lucroTotal.toFixed(2),
+    valorAtualUsd: totais.valorAtualUsd.toFixed(2),
+    valorAtualBrl: totais.valorAtualBrl.toFixed(2),
+  };
+
+  return allTimeProfit;
+};
+
+export const calcularPortfolio = async (
+  cotacaoDolar: Decimal,
+  symbolFilter?: string
+): Promise<Ativo[]> => {
   const cryptos = await prisma.crypto.findMany({
     include: {
       investments: true,
@@ -26,7 +56,6 @@ export const calcularPortfolio = async (symbolFilter?: string): Promise<Ativo[]>
     },
   });
 
-  const cotacaoDolar = await getCotacaoDolar();
   const ativos: Ativo[] = [];
 
   for (const crypto of cryptos) {
@@ -56,7 +85,6 @@ export const calcularPortfolio = async (symbolFilter?: string): Promise<Ativo[]>
       (sum, i) => sum.plus(i.totalUsdValue),
       new Decimal(0)
     );
-    console.log(totalInvestido.dividedBy(totalTokensComprados));
 
     const valorRealizadoVendas = sales.reduce(
       (sum, s) => sum.plus(s.quantity).times(s.unitPriceUsd),
@@ -104,7 +132,7 @@ const getCotacaoCripto = async (symbol: string): Promise<Decimal> => {
   }
 };
 
-const getCotacaoDolar = async (): Promise<Decimal> => {
+export const getCotacaoDolar = async (): Promise<Decimal> => {
   try {
     const res = await axios.get('https://economia.awesomeapi.com.br/json/last/USD-BRL');
     return new Decimal(res.data.USDBRL.bid);

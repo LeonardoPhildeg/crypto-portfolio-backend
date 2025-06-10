@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
-import { calcularPortfolio, gerarHistoricoEvolucao } from '../services/portfolioService';
+import {
+  calcularPortfolio,
+  calculaTotais,
+  gerarHistoricoEvolucao,
+  getCotacaoDolar,
+} from '../services/portfolioService';
 import { exportPortfolioToJson, exportPortfolioToCsv } from '../utils/exportUtils';
 import { PrismaClient, Investment, Sale } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
 
 const prisma = new PrismaClient();
 
@@ -11,21 +15,11 @@ const prisma = new PrismaClient();
  */
 export const getPortfolio = async (_: Request, res: Response) => {
   try {
-    const data = await calcularPortfolio();
-    const totais = data.reduce(
-      (acc, item) => {
-        acc.lucroTotal = acc.lucroTotal.plus(new Decimal(item.valorRentabilidadeTotal));
-        acc.investidoTotal = acc.investidoTotal.plus(new Decimal(item.investido));
-        return acc;
-      },
-      { lucroTotal: new Decimal(0), investidoTotal: new Decimal(0) }
-    );
-    const allTimeProfit = {
-      valor: totais.investidoTotal.toFixed(2),
-      percentual: totais.lucroTotal.dividedBy(totais.investidoTotal).times(100).toFixed(2),
-    };
+    const cotacaoDolar = await getCotacaoDolar();
+    const data = await calcularPortfolio(cotacaoDolar);
+    const totais = await calculaTotais(data);
 
-    return res.json({ success: true, data, allTimeProfit });
+    return res.json({ success: true, data, totais, cotacaoDolar: cotacaoDolar.toFixed(2) });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, error: 'Erro ao calcular carteira' });
